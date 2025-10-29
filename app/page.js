@@ -1,65 +1,203 @@
-import Image from "next/image";
+
+"use client"
+
+import { useState, useEffect } from "react"
+import StudentRegistration from "@/components/StudentRegistration"
+import GradeSelection from "@/components/GradeSelection"
+import SubjectSelection from "@/components/SubjectSelection"
+import QuestionSourceSelection from "@/components/QuestionSourceSelection"
+import QuizTaking from "@/components/QuizTaking"
+import QuizResults from "@/components/QuizResults"
+import { saveQuizSession, getQuizSession, saveQuizResult, saveStudentData } from "@/lib/storage"
+import { QUIZ_STATES } from "@/lib/constant"
 
 export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+  const [currentState, setCurrentState] = useState(QUIZ_STATES.STUDENT_REGISTRATION)
+  const [quizData, setQuizData] = useState({})
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (mounted) {
+      const savedSession = getQuizSession()
+      if (savedSession) {
+        setQuizData(savedSession)
+        setCurrentState(QUIZ_STATES.QUIZ_IN_PROGRESS)
+      }
+    }
+  }, [mounted])
+
+  if (!mounted) {
+    return null
+  }
+
+  const handleRegistration = (data) => {
+    setQuizData({ ...quizData, ...data })
+    saveStudentData(data)
+    setCurrentState(QUIZ_STATES.GRADE_SELECTION)
+  }
+
+  const handleGradeSelection = (data) => {
+    setQuizData({ ...quizData, ...data })
+    setCurrentState(QUIZ_STATES.SUBJECT_SELECTION)
+  }
+
+  const handleSubjectSelection = (data) => {
+    setQuizData({ ...quizData, ...data })
+    setCurrentState(QUIZ_STATES.QUESTION_SOURCE_SELECTION)
+  }
+
+  const handleQuestionSourceSelection = async (data) => {
+    setLoading(true)
+    setError("")
+
+    const finalQuizData = { ...quizData, ...data }
+
+    try {
+      const response = await fetch('/api/quiz', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(finalQuizData),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setQuizData(result.quiz)
+        saveQuizSession(result.quiz)
+        setCurrentState(QUIZ_STATES.QUIZ_IN_PROGRESS)
+      } else {
+        setError(result.error || 'Failed to generate quiz')
+      }
+    } catch (err) {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleQuizComplete = (result) => {
+    saveQuizResult(result)
+    setQuizData(result)
+    setCurrentState(QUIZ_STATES.RESULTS_DISPLAY)
+  }
+
+  const handleRestart = () => {
+    setQuizData({})
+    setCurrentState(QUIZ_STATES.STUDENT_REGISTRATION)
+  }
+
+  const handleHome = () => {
+    setQuizData({})
+    setCurrentState(QUIZ_STATES.STUDENT_REGISTRATION)
+  }
+
+  const handleBack = () => {
+    switch (currentState) {
+      case QUIZ_STATES.GRADE_SELECTION:
+        setCurrentState(QUIZ_STATES.STUDENT_REGISTRATION)
+        break
+      case QUIZ_STATES.SUBJECT_SELECTION:
+        setCurrentState(QUIZ_STATES.GRADE_SELECTION)
+        break
+      case QUIZ_STATES.QUESTION_SOURCE_SELECTION:
+        setCurrentState(QUIZ_STATES.SUBJECT_SELECTION)
+        break
+      case QUIZ_STATES.QUIZ_IN_PROGRESS:
+        setCurrentState(QUIZ_STATES.QUESTION_SOURCE_SELECTION)
+        break
+      default:
+        break
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center text-foreground">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto mb-4"></div>
+          <p className="text-xl">Professor Sarah is preparing your quiz...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center text-foreground bg-destructive p-6 rounded-lg">
+          <p className="text-xl mb-4 text-destructive-foreground">Oops! {error}</p>
+          <button
+            onClick={() => setError("")}
+            className="bg-background text-foreground px-4 py-2 rounded hover:bg-accent"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  switch (currentState) {
+    case QUIZ_STATES.STUDENT_REGISTRATION:
+      return <StudentRegistration onNext={handleRegistration} />
+
+    case QUIZ_STATES.GRADE_SELECTION:
+      return (
+        <GradeSelection
+          studentName={quizData.studentName}
+          onNext={handleGradeSelection}
+          onBack={handleBack}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+      )
+
+    case QUIZ_STATES.SUBJECT_SELECTION:
+      return (
+        <SubjectSelection
+          studentName={quizData.studentName}
+          grade={quizData.grade}
+          onNext={handleSubjectSelection}
+          onBack={handleBack}
+        />
+      )
+
+    case QUIZ_STATES.QUESTION_SOURCE_SELECTION:
+      return (
+        <QuestionSourceSelection
+          studentName={quizData.studentName}
+          grade={quizData.grade}
+          subject={quizData.subject}
+          onNext={handleQuestionSourceSelection}
+          onBack={handleBack}
+        />
+      )
+
+    case QUIZ_STATES.QUIZ_IN_PROGRESS:
+      return (
+        <QuizTaking
+          quizData={quizData}
+          onComplete={handleQuizComplete}
+          onBack={handleBack}
+        />
+      )
+
+    case QUIZ_STATES.RESULTS_DISPLAY:
+      return (
+        <QuizResults
+          result={quizData}
+          onRestart={handleRestart}
+          onHome={handleHome}
+        />
+      )
+
+    default:
+      return <StudentRegistration onNext={handleRegistration} />
+  }
 }

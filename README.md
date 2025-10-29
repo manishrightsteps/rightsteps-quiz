@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🎯 Rightsteps Quiz - Interactive Learning Platform
 
-## Getting Started
+An engaging educational quiz platform that combines AI-powered question generation with expert teacher-prepared content. Perfect for students in grades 1-5 to practice Mathematics and Science in a fun, interactive way.
 
-First, run the development server:
+## ✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 🎓 Smart Learning Experience
+- **AI-Powered Questions**: Professor Sarah Mitchell creates personalized questions using OpenAI
+- **Teacher-Prepared Content**: Curated questions from experienced educators
+- **Adaptive Difficulty**: Easy, Medium, and Hard levels for progressive learning
+- **Real-time Feedback**: Instant explanations and hints for better understanding
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 📊 Comprehensive Analytics
+- **Performance Tracking**: Detailed score breakdowns and accuracy metrics
+- **Progress Visualization**: Charts and graphs showing learning progress
+- **Time Management**: Track time spent on each question and overall quiz
+- **Hint Usage**: Monitor help-seeking behavior for better learning insights
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 🎨 Modern UI/UX
+- **ShadCN Components**: Professional, accessible design system
+- **Responsive Design**: Works perfectly on desktop, tablet, and mobile
+- **Dark Mode Ready**: Built with CSS variables for easy theming
+- **Smooth Animations**: Engaging transitions and hover effects
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 💾 Data Persistence
+- **Local Storage**: Save quiz progress and resume later
+- **Results History**: Track performance over time
+- **Student Profiles**: Maintain individual learning records
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
