@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -22,6 +22,24 @@ export default function QuizTaking({ quizData, onComplete, onBack }) {
   const currentQuestion = quizData.questions[currentQuestionIndex]
   const progress = ((currentQuestionIndex + 1) / quizData.totalQuestions) * 100
 
+  const handleQuizComplete = useCallback(() => {
+    const score = answers.filter(a => a.isCorrect).length
+    const percentage = Math.round((score / quizData.totalQuestions) * 100)
+
+    const result = {
+      ...quizData,
+      answers,
+      score,
+      totalQuestions: quizData.totalQuestions,
+      percentage,
+      completedAt: new Date().toISOString(),
+      timeSpent: (quizData.timeLimit * 60) - timeLeft,
+      hintsUsed
+    }
+
+    onComplete(result)
+  }, [answers, quizData, timeLeft, hintsUsed, onComplete])
+
   useEffect(() => {
     if (timeLeft > 0) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000)
@@ -29,7 +47,7 @@ export default function QuizTaking({ quizData, onComplete, onBack }) {
     } else {
       handleQuizComplete()
     }
-  }, [timeLeft])
+  }, [timeLeft, handleQuizComplete])
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
@@ -75,23 +93,6 @@ export default function QuizTaking({ quizData, onComplete, onBack }) {
     }
   }
 
-  const handleQuizComplete = () => {
-    const score = answers.filter(a => a.isCorrect).length
-    const percentage = Math.round((score / quizData.totalQuestions) * 100)
-
-    const result = {
-      ...quizData,
-      answers,
-      score,
-      totalQuestions: quizData.totalQuestions,
-      percentage,
-      completedAt: new Date().toISOString(),
-      timeSpent: (quizData.timeLimit * 60) - timeLeft,
-      hintsUsed
-    }
-
-    onComplete(result)
-  }
 
   const handleShowHint = () => {
     if (hintsUsed < quizData.maxHints && !showFeedback) {
